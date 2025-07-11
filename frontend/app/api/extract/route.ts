@@ -28,5 +28,7 @@ export async function POST(req: NextRequest) {
     }]
   });
 
-  return NextResponse.json({ result: resp.choices[0].message.content });
+    const result = resp.choices?.[0]?.message?.content ?? "No content returned";
+
+    return NextResponse.json({ result });
 }
