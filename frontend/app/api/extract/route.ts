@@ -7,6 +7,19 @@ import Together from "together-ai";
 import fs from "fs";
 import path from "path";
 
+// ファイル冒頭あたりに定義
+interface AiItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface AiPayload {
+  items: AiItem[];
+  total: number;
+  service_charge_10_percent?: boolean;
+}
+
 /* 価格表をサーバ起動時に 1 度ロード */
 const MENU: Record<string, number> = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), "data/menu.json"), "utf8")
@@ -57,26 +70,24 @@ Guidelines:
 
   /* 3. JSON 解析 & 検証 */
   const raw = resp.choices?.[0]?.message?.content ?? "{}";
-  let parsed: any;
+  let parsed: AiPayload;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(raw) as AiPayload;
   } catch {
     return NextResponse.json({ error: "LLM returned invalid JSON", raw });
   }
 
-  const items = (parsed.items ?? []).map((it: any) => {
+  const items = (parsed.items ?? []).map((it: AiItem) => {
     const menuPrice = MENU[it.name] ?? null;
     return {
       ...it,
-      valid:
-        menuPrice !== null && Math.abs(menuPrice - it.price) < 0.01,
-      expectedPrice: menuPrice
+      valid: menuPrice !== null && Math.abs(menuPrice - it.price) < 0.01,
+      expectedPrice: menuPrice,
     };
   });
 
   const total = items.reduce(
-    (sum: number, it: any) =>
-      sum + (it.expectedPrice ?? it.price) * (it.quantity ?? 1),
+    (sum, it) => sum + (it.expectedPrice ?? it.price) * it.quantity,
     0
   );
 

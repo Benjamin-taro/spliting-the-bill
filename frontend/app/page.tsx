@@ -153,7 +153,6 @@ export default function Home() {
     (s, it) => s + it.price * it.quantity,
     0
   );
-  const perHead = numPeople ? (subtotal / numPeople).toFixed(2) : "0.00";
 
   /*------------- JSX -------------*/
   return (
