@@ -148,11 +148,6 @@ export default function Home() {
     });
   }
 
-  /* 計算 */
-  const subtotal = items.reduce(
-    (s, it) => s + it.price * it.quantity,
-    0
-  );
 
   /*------------- JSX -------------*/
   return (
